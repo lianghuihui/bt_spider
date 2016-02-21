@@ -18,8 +18,6 @@ monkey.patch_socket()
 
 def run_worker(q):
 
-    g_pool = GPool(20)
-
     def _crawl_deco(func):
         @functools.wraps(func)
         def wrapper(*args, **kw):
@@ -42,7 +40,7 @@ def run_worker(q):
             title = item_q("img:first").attr("alt")
             date = item_q("span:first").text()
             db_score = "".join([
-                item_q(".rt:first strong").text(),\
+                item_q(".rt:first strong").text(),
                 ".",
                 item_q(".rt:first em:last").text()])
 
@@ -58,11 +56,11 @@ def run_worker(q):
         if respon.ok:
             _parse_html(respon.content)
 
+    g_pool = GPool(20)
     while not q.empty():
         rst = q.get()
-        g_pool.spawn(_crawl_url, rst)
+        g_pool.spawn(_crawl_url, rst).join()
 
-    g_pool.join()
 
 if __name__ == '__main__':
 
@@ -70,7 +68,7 @@ if __name__ == '__main__':
 
     q = multiprocessing.Queue()
     map( q.put, ["http://www.bttiantang.com/?PageNo={}".format(i)
-                 for i in range(1, 100)] )
+                 for i in range(1, 50)] )
 
     worker_count = 2 * multiprocessing.cpu_count() + 1
     workers = [multiprocessing.Process(target=run_worker, args=(q,))
@@ -81,3 +79,4 @@ if __name__ == '__main__':
 
     end_time = time.time()
     print "total cost {} sec.".format(end_time - start_time)
+
