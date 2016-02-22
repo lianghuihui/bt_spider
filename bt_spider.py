@@ -59,8 +59,9 @@ def run_worker(q):
     g_pool = GPool(20)
     while not q.empty():
         rst = q.get()
-        g_pool.spawn(_crawl_url, rst).join()
+        g_pool.spawn(_crawl_url, rst)
 
+    g_pool.join()
 
 if __name__ == '__main__':
 
@@ -68,7 +69,7 @@ if __name__ == '__main__':
 
     q = multiprocessing.Queue()
     map( q.put, ["http://www.bttiantang.com/?PageNo={}".format(i)
-                 for i in range(1, 50)] )
+                 for i in range(1, 100)] )
 
     worker_count = 2 * multiprocessing.cpu_count() + 1
     workers = [multiprocessing.Process(target=run_worker, args=(q,))
