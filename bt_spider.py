@@ -43,12 +43,14 @@ def run_worker(q):
                 item_q(".rt:first strong").text(),
                 ".",
                 item_q(".rt:first em:last").text()])
+            url = "www.bttiantang.com{}".format(item_q("a:first").attr("href"))
 
             if title and date and db_score:
-                print "<==title==>{}<==date==>{}<===score===>{}".format(
+                print "<===>{}<===>{}<===>{}<===>{}".format(
                         title.encode("utf8"),
                         date.encode("utf8"),
-                        db_score.encode("utf8"))
+                        db_score.encode("utf8"),
+                        url.encode("utf8"))
 
     @_crawl_deco
     def _crawl_url(url):
@@ -73,6 +75,8 @@ if __name__ == '__main__':
                  for i in range(1, 500)] )
 
     worker_count = 2 * multiprocessing.cpu_count() + 1
+    # FIXME
+    worker_count = 1
     workers = [multiprocessing.Process(target=run_worker, args=(q,))
                for i in range(worker_count) ]
 
