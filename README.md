@@ -14,4 +14,8 @@ and run
 
     $ python bt_spider.py | tee rst.log
 
+and using shell to show the top 50 movices in year 2015
+
+    $ less rst.log | grep '<===>2015' | awk -F '<===>' '{print $4"  "$3"  "$2"  "$5}' | LC_ALL=C sort -k 1,2 -r | head -n 50
+
 enjoy
