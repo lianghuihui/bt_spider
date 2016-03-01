@@ -3,7 +3,6 @@
 import random
 import time
 import functools
-import multiprocessing
 
 import requests
 from requests.exceptions import ReadTimeout, ConnectionError
@@ -16,7 +15,7 @@ from pyquery import PyQuery as pq
 from gevent import monkey
 monkey.patch_socket()
 
-def run_worker(q):
+def run_worker(url):
 
     def _crawl_deco(func):
         @functools.wraps(func)
@@ -58,30 +57,18 @@ def run_worker(q):
         if respon.ok:
             _parse_html(respon.content)
 
-    g_pool = GPool(20)
-    while not q.empty():
-        rst = q.get()
-        g_pool.spawn( _crawl_url, rst )
-
-    g_pool.join()
+    _crawl_url(url)
 
 
 if __name__ == '__main__':
 
     start_time = time.time()
 
-    q = multiprocessing.Queue()
-    map( q.put, ["http://www.bttiantang.com/?PageNo={}".format(i)
-                 for i in range(1, 500)] )
+    crawl_list = ( "http://www.bttiantang.com/?PageNo={}".format(i)
+                 for i in range(1, 500) )
 
-    worker_count = 2 * multiprocessing.cpu_count() + 1
-    # FIXME
-    worker_count = 1
-    workers = [multiprocessing.Process(target=run_worker, args=(q,))
-               for i in range(worker_count) ]
-
-    map( lambda worker: worker.start(), workers )
-    map( lambda worker: worker.join(), workers )
+    g_pool = GPool(50)
+    g_pool.map( run_worker, crawl_list )
 
     end_time = time.time()
     print "total cost {} sec.".format(end_time - start_time)
